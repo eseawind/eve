@@ -3,6 +3,12 @@
 
 class ItemModel extends Model {
 	public function _initialize(){
+		$m=new Model();
+		#language:中文
+		#Other language: trntranslationlanguages.languageName
+		#
+		$q=$m->query("select languageid from trntranslationlanguages where languageName='CHINESE (SIMPLIFIED)'");		
+		$this->language=$q[0]['languageid'];
 	}
 	public function getItem($name){
 		$this->getInfo($name);
@@ -70,11 +76,9 @@ class ItemModel extends Model {
   	return $Mineral;
 	}
 	protected function getInfo($name){
-		$m=new Model();
-		$q=$m->query("select languageid from trntranslationlanguages where languageName='CHINESE (SIMPLIFIED)'");
 		$db=M('trntranslations');
 		$map['tcid']=8;
-		$map['languageid']=$q[0]['languageid'];
+		$map['languageid']=$this->language;
 		$map['text']=array('like',$name.'%');
 		$query=$db->where($map)->find();
 		$this->id= $query['keyID'];
