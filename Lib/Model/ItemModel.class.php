@@ -14,7 +14,7 @@ class ItemModel extends Model {
 		$rtn=$this->getInfo($name);
 		if(!$rtn['id']) return;
 		$Mineral=$this->getMineral($rtn['id']);
-		//$DeeperMineral=$this->getDeeperMineral($Mineral);
+		$DeeperMineral=$this->getDeeperMineral($Mineral);
 		return array('name'=>$rtn['name'],'Mineral'=>$Mineral,'DeeperMineral'=>$DeeperMineral);	
 	}
 	public function getItems($items){
@@ -54,7 +54,7 @@ class ItemModel extends Model {
 		return $item1;
 	}
 	public function getMineral($id){
-		$Mineral=$this->getWastedMineral($id)+$this->getExtraMineral($id);
+		$Mineral=$this->getWastedMineral($id,-4)+$this->getExtraMineral($id);
 		return $Mineral;
 	}
 	public function getDeeperMineral($Mineral){
