@@ -1,0 +1,61 @@
+﻿<include file="./Public/header.html" />
+<form action="" method="post" enctype="application/x-www-form-urlencoded">
+<input name="item" type="text" value="" size="50" />
+<input name="" type="submit" />
+</form>
+<if condition="sizeof($items) gt 0"> 
+<for start="0" end="sizeof($items)-1">
+<h2>{$items[$i]['name']}</h2>
+<table width="600" border="0">
+	<php>foreach($items[$i]['Mineral'] as $vo){</php>
+  <tr width> 
+    <td>{$vo['Mineral']}</td>
+    <td>{$vo['quantity']}</td>
+    <td>售价：{$vo['price']['sell']}</td>
+    <td>收价：{$vo['price']['buy']}</td>
+  </tr>
+	<php>}</php>
+	<tr>
+	<php>if(sizeof($items[$i]['DeeperMineral'])!=0 && $items[$i]['DeeperMineral']!=$items[$i]['Mineral']){</php>
+       <tr>
+    <th colspan="3" scope="row"><h3><div align="left">深度材料解析</div></h3></th>
+  </tr>
+	<php>foreach($items[$i]['DeeperMineral'] as $vo){</php>
+	<tr width> 
+     <td>{$vo['Mineral']}</td>
+     <td>{$vo['quantity']}</td>
+     <td>售价：{$vo['price']['sell']}</td>
+     <td>收价：{$vo['price']['buy']}</td>
+    </tr>
+    <php>}}</php>
+</table>
+</for>
+<if condition="sizeof($items) gt 1"> 
+<h2>总计</h2>
+<table width="600" border="0">
+	<php>foreach($items['total']['Mineral'] as $vo){</php>
+  <tr width> 
+    <td>{$vo['Mineral']}</td>
+    <td>{$vo['quantity']}</td>
+    <td>售价：{$vo['price']['sell']}</td>
+    <td>收价：{$vo['price']['buy']}</td>
+  </tr>
+ 	<php>}</php>
+	<tr>
+	<php>if(sizeof($items['total']['DeeperMineral'])!=0 && $items['total']['DeeperMineral']!=$items['total']['Mineral']){</php>
+       <tr>
+    <th colspan="3" scope="row"><h3><div align="left">深度材料解析</div></h3></th>
+  </tr>
+	<php>foreach($items['total']['DeeperMineral'] as $vo){</php>
+	<tr width> 
+     <td>{$vo['Mineral']}</td>
+     <td>{$vo['quantity']}</td>
+     <td>售价：{$vo['price']['sell']}</td>
+     <td>收价：{$vo['price']['buy']}</td>
+    </tr>
+    <php>}}</php>
+</table>
+</if>
+</empty>
+</if>
+<include file="./Public/footer.html" />

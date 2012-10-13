@@ -1,0 +1,96 @@
+<include file="./Public/header.html" />
+<style type="text/css">
+<!--
+body {
+	background: #71A2C4;
+	font: 16px arial,sans-serif;
+}
+.loginform{
+	top: 30%;
+	left: 40%;
+	height: 300px;
+	width: 450px;
+	position: absolute;
+}
+label{
+	display:block;
+	padding: 8px;
+}
+label span{
+	float: left;
+}
+.text{
+	border: 0 none;
+	border-radius: 3px 3px 3px 3px;
+	color: #000000;
+	font-size: 14px;
+	height: 15px;
+	outline: medium none;
+	padding: 8px;
+	width: 200px;
+	top: -5px;
+	position: relative;
+	left: 10px;
+}
+.button{
+	background: none repeat scroll 0 0 #FFFFFF;
+	border: 0 none;
+	border-radius: 3px 3px 3px 3px;
+	box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
+	color: #00273E;
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: bold;
+	height: 32px;
+	margin: 0;
+	overflow: visible;
+	padding: 0 25px;
+	text-shadow: 0 1px 0 #FFFA7E;
+	vertical-align: middle;
+	position: relative;
+	left: 95px;
+}
+.button:hover{
+	background: #060;
+	color: #FFFFFF;
+	text-shadow: 0;
+	font-weight: normal;
+}
+span.remember{
+	font-size: 12px;
+	float:none;
+	top: -2px;
+	position: relative;
+}
+h3{
+	left: 68px;
+	position: relative;
+}
+a{
+	font-size: 12px;
+	top: -2px;
+	position: relative;
+	left: 110px;
+}
+-->
+</style>
+</head>
+
+<body>
+<form action="{:U('main/dologin')}" method="post" class="loginform">
+<h3>高新产业部 登录</h3>
+	<label>
+		<span>账号</span>
+		<input class="text" placeholder="请输入登录名" name="username">
+	</label>
+	<label>
+		<span>密码</span>
+		<input class="text" type="password" placeholder="请输入密码" name="password">
+	</label>
+  <label>
+  	<input name="remember" type="checkbox" value="0" ><span class="remember" >记住登录状态</span></input>
+    <a href="{:U('main/register')}">新建账号</a>
+  </label>
+		<input class="button" type="submit" value="登录">
+</form>
+<include file="./Public/footer.html" />
