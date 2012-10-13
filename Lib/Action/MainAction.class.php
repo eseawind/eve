@@ -83,8 +83,7 @@ class MainAction extends Action
 				$array=$this->Itemsplit($_REQUEST['item']);
 				$query=D('Item');
 				$items=$query->getItems($array);
-				$item=$query->getItem('伊什塔');
-				print_r($item);
+				//print_r($items);
 				$this->assign('items',$items);
 			}
    		$this->display();
@@ -93,6 +92,8 @@ class MainAction extends Action
 		protected function Itemsplit($string){
 			$types=explode('+',$string);
 			foreach($types as $type){
+				if(trim($type)=="")
+					continue;
 				$tmp=explode('*',$type);
 				$items[]=array('type'=>$tmp[0],'num'=>$tmp[1]);
 			}

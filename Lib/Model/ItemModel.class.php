@@ -8,21 +8,21 @@ class ItemModel extends Model {
 		#Other language: trntranslationlanguages.languageName
 		#
 		$q=$m->query("select languageid from trntranslationlanguages where languageName='CHINESE (SIMPLIFIED)'");		
-		$this->language=$q[0]['languageid'];
+		$this->language=$q[0]['languageid']?$q[0]['languageid']:'ZH';
 	}
 	public function getItem($name){
-		$this->getInfo($name);
-		if(is_null($this->id))	return;	
-		$Mineral=$this->getMineral($this->id);
-		$DeeperMineral=$this->getDeeperMineral($Mineral);
-		return array('name'=>$this->name,'Mineral'=>$Mineral,'DeeperMineral'=>$DeeperMineral);	
+		$rtn=$this->getInfo($name);
+		if(!$rtn['id']) return;
+		$Mineral=$this->getMineral($rtn['id']);
+		//$DeeperMineral=$this->getDeeperMineral($Mineral);
+		return array('name'=>$rtn['name'],'Mineral'=>$Mineral,'DeeperMineral'=>$DeeperMineral);	
 	}
 	public function getItems($items){
 		$total=array();
 		foreach($items as $item){
-			$current=$this->MultiItem($this->getItem($item['type']),$item['num']);
+			$current=$this->MulItems($this->getItem($item['type']),$item['num']);
 			$all[]=$current;
-			$total=$this->addItems($current,$total);
+			$total=$this->AddItems($current,$total);
 		}
 		if(sizeof($items)==1){
 			return array($current);
@@ -31,7 +31,7 @@ class ItemModel extends Model {
 			return $all;
 		}
 	}
-	protected function MultiItem($item,$num){
+	protected function MulItems($item,$num){
 		$num=$num<=0 ? 1:$num;
 		$item['name']=$item['name']." *".$num;
 		foreach($item['Mineral'] as $typeid=> $m){
@@ -42,7 +42,7 @@ class ItemModel extends Model {
 		}
 		return $item;
 	}
-	protected function addItems($item1,$item2){
+	protected function AddItems($item1,$item2){
 		foreach($item2['Mineral'] as $typeid => $m){
 			$item1['Mineral'][$typeid]['Mineral']=$item2['Mineral'][$typeid]['Mineral'];
 			$item1['Mineral'][$typeid]['quantity']+=$item2['Mineral'][$typeid]['quantity'];
@@ -53,9 +53,8 @@ class ItemModel extends Model {
 		}
 		return $item1;
 	}
-	
 	public function getMineral($id){
-		$Mineral=$this->getBaseMineral($id)+$this->getExtraMineral($id);
+		$Mineral=$this->getWastedMineral($id)+$this->getExtraMineral($id);
 		return $Mineral;
 	}
 	public function getDeeperMineral($Mineral){
@@ -81,16 +80,33 @@ class ItemModel extends Model {
 		$map['languageid']=$this->language;
 		$map['text']=array('like',$name.'%');
 		$query=$db->where($map)->find();
-		$this->id= $query['keyID'];
-		$this->name=$query['text'];
+		$rtn['id']= $query['keyID'];
+		$rtn['name']=$query['text'];
+		return $rtn;
 	}
 
 	protected function getBaseMineral($id){
 		$db=M('invtypematerials');
 		$map['typeid']=$id;
 		$query=$db->where($map)->select();
-		return $this->translation($query);
+		$bp=$this->getBlueprint($id);
+		$blueprintid=$bp['blueprintTypeID'];
+		$Mineral=$this->translation($query);
+		if($bp['techLevel']==2){		#tech 2 blueprint
+			$parentid=$this->getParentItem($id);
+			$extraMineral=$this->getExtraMineral($id);
+			if($extraMineral[$parentid]['quantity']>0){
+				$Mineral=$this->SubMineral($Mineral,$this->getBaseMineral($parentid));
+			}
+		}
+		return $Mineral;
 	}
+	protected function getWastedMineral($id,$ME=0){
+		$bp=$this->getBlueprint($id);
+		$blueprintid=$bp['blueprintTypeID'];
+		return $this->AddWaste($this->getBaseMineral($id),$ME,$blueprintid);
+	}
+	
 	public function getExtraMineral($id){
 		$bp=$this->getBlueprint($id);
 		$blueprintid=$bp['blueprintTypeID'];
@@ -107,18 +123,25 @@ class ItemModel extends Model {
 		$query=$db->where($map)->find();
 		return $query;
 	}
+	protected function getParentItem($id){
+		$db=M('invmetatypes');
+		$map['typeid']=$id;
+		$query=$db->where($map)->find();
+		return $query['parentTypeID'];
+	}
 	protected function translation($array){
 		$Mineral=array();
 		foreach($array as $m){
 			$zh=$this->getZH($m['materialTypeID']);
 			$Mineral[$m['materialTypeID']]=array('Mineral'=>$zh,'quantity'=>$m['quantity']);
 		}
+		//print_r($array);
 		return $Mineral;
 	}
 	protected function getZH($id){
 		$db=M('trntranslations');
 		$map['tcid']=8;
-		$map['languageid']='ZH-HANS';
+		$map['languageid']=$this->language;
 		$map['keyid']=$id;
 		$query=$db->where($map)->find();
 		return $query['text'];
@@ -140,6 +163,38 @@ class ItemModel extends Model {
 		$sellmin=removeHtmlTagsWithExceptions($xml->marketstat->type->sell->min->asXML());
 		return array('sell'=>$sellmin,'buy'=>$buymax);
 	}
-	
+	protected function AddWaste($array,$wastelevel,$blueprintid){
+		$baseFactor=$this->getbaseFactor($blueprintid);
+		$wasteFactor=$this->wasteFactor($wastelevel,$baseFactor);
+		foreach($array as $typeid => $m){
+			$array[$typeid]['quantity']=round($m['quantity']*(1+$wasteFactor/100),0);
+		}
+		return $array;
+	}
+	protected function getbaseFactor($blueprintid){
+		$db=M('invblueprinttypes');
+		$map['blueprintTypeID']=$blueprintid;
+		$query=$db->where($map)->find();
+		return $query['wasteFactor'];
+	}
+	public function wasteFactor($wastelevel,$baseFactor=10){
+		if(!is_integer($wastelevel))
+			return;
+		if($wastelevel>=0){
+  		bcscale(6);
+  		$wasteFactor=bcmul($baseFactor,bcdiv(1,$wastelevel+1));
+  	}else{
+  		$wasteFactor=$baseFactor*(1-$wastelevel);
+  	}
+		return $wasteFactor;
+	}
+	protected function SubMineral($Mineral1,$Mineral2){
+
+		foreach($Mineral2 as $typeid => $m){
+			$Mineral1[$typeid]['quantity']=$Mineral1[$typeid]['quantity']-$Mineral2[$typeid]['quantity'];
+			if($Mineral1[$typeid]['quantity']<=0) unset($Mineral1[$typeid]);
+		}
+		return $Mineral1;
+	}
 }
 ?>

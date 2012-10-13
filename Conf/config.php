@@ -3,11 +3,16 @@
 return array(
 	//'配置项'=>'配置值'
 	'DB_TYPE'=>'mysql',
+# LocalHost
+
   'DB_HOST'=>'localhost',
   'DB_NAME'=>'eve',
   'DB_USER'=>'root',
   'DB_PWD'=>'33078233',
   'DB_PORT'=>'3306',
+
+
+ #
   'DB_PREFIX'=>'',
 	'URL_CASE_INSENSITIVE' =>true,
 	'DEFAULT_MODULE' =>	'main',
