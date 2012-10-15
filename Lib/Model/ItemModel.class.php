@@ -3,12 +3,12 @@
 
 class ItemModel extends Model {
 	public function _initialize(){
-		$m=new Model();
 		#language:中文
 		#Other language: trntranslationlanguages.languageName
 		#
-		$q=$m->query("select languageid from trntranslationlanguages where languageName='CHINESE (SIMPLIFIED)'");		
-		$this->language=$q[0]['languageid']?$q[0]['languageid']:'ZH';
+		$q=$this->selectDB('trntranslationlanguages')->field('languageid')->where("languageName='CHINESE (SIMPLIFIED)'")->find();
+		$language=$q['languageid']?$q['languageid']:'ZH';
+		define('LANGUAGE',$language);
 	}
 	public function getItem($name){
 		$rtn=$this->getInfo($name);
@@ -75,9 +75,9 @@ class ItemModel extends Model {
   	return $Mineral;
 	}
 	protected function getInfo($name){
-		$db=M('trntranslations');
+		$db=$this->selectDB('trntranslations');
 		$map['tcid']=8;
-		$map['languageid']=$this->language;
+		$map['languageid']=LANGUAGE;
 		$map['text']=array('like',$name.'%');
 		$query=$db->where($map)->find();
 		$rtn['id']= $query['keyID'];
@@ -86,7 +86,7 @@ class ItemModel extends Model {
 	}
 
 	protected function getBaseMineral($id){
-		$db=M('invtypematerials');
+		$db=$this->selectDB('invtypematerials');
 		$map['typeid']=$id;
 		$query=$db->where($map)->select();
 		$bp=$this->getBlueprint($id);
@@ -110,7 +110,7 @@ class ItemModel extends Model {
 	public function getExtraMineral($id){
 		$bp=$this->getBlueprint($id);
 		$blueprintid=$bp['blueprintTypeID'];
-		$db=M('ramtyperequirements');
+		$db=$this->selectDB('ramtyperequirements');
 		$map['typeid']=$blueprintid;
 		$map['activityid']=1;
 		$map['damagePerJob']=array('gt',0);
@@ -118,13 +118,13 @@ class ItemModel extends Model {
 		return $this->translation($query);
 	} 
 	protected function getBlueprint($productid){
-		$db=M('invblueprinttypes');
+		$db=$this->selectDB('invblueprinttypes');
 		$map['productTypeID']=$productid;
 		$query=$db->where($map)->find();
 		return $query;
 	}
 	protected function getParentItem($id){
-		$db=M('invmetatypes');
+		$db=$this->selectDB('invmetatypes');
 		$map['typeid']=$id;
 		$query=$db->where($map)->find();
 		return $query['parentTypeID'];
@@ -139,9 +139,9 @@ class ItemModel extends Model {
 		return $Mineral;
 	}
 	protected function getZH($id){
-		$db=M('trntranslations');
+		$db=$this->selectDB('trntranslations');
 		$map['tcid']=8;
-		$map['languageid']=$this->language;
+		$map['languageid']=LANGUAGE;
 		$map['keyid']=$id;
 		$query=$db->where($map)->find();
 		return $query['text'];
@@ -172,7 +172,7 @@ class ItemModel extends Model {
 		return $array;
 	}
 	protected function getbaseFactor($blueprintid){
-		$db=M('invblueprinttypes');
+		$db=$this->selectDB('invblueprinttypes');
 		$map['blueprintTypeID']=$blueprintid;
 		$query=$db->where($map)->find();
 		return $query['wasteFactor'];
@@ -195,6 +195,11 @@ class ItemModel extends Model {
 			if($Mineral1[$typeid]['quantity']<=0) unset($Mineral1[$typeid]);
 		}
 		return $Mineral1;
+	}
+	public function selectDB($table){
+		$db=C('DB_CONFIG_EVE');
+		$connection=$db['DB_TYPE'].'://'.$db['DB_USER'].':'.$db['DB_PWD'].'@'.$db['DB_HOST'].':'.$db['DB_PORT'].'/'.$db['DB_NAME'];
+		return $this->db(1,$connection)->table($table);
 	}
 }
 ?>
