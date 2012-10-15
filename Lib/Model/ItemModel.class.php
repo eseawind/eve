@@ -8,7 +8,7 @@ class ItemModel extends Model {
 		#
 		$q=$this->selectDB('trntranslationlanguages')->field('languageid')->where("languageName='CHINESE (SIMPLIFIED)'")->find();
 		$language=$q['languageid']?$q['languageid']:'ZH';
-		define('LANGUAGE',$language);
+		define('DB_LANGUAGE',$language);
 	}
 	public function getItem($name){
 		$rtn=$this->getInfo($name);
@@ -77,7 +77,7 @@ class ItemModel extends Model {
 	protected function getInfo($name){
 		$db=$this->selectDB('trntranslations');
 		$map['tcid']=8;
-		$map['languageid']=LANGUAGE;
+		$map['languageid']=DB_LANGUAGE;
 		$map['text']=array('like',$name.'%');
 		$query=$db->where($map)->find();
 		$rtn['id']= $query['keyID'];
@@ -141,7 +141,7 @@ class ItemModel extends Model {
 	protected function getZH($id){
 		$db=$this->selectDB('trntranslations');
 		$map['tcid']=8;
-		$map['languageid']=LANGUAGE;
+		$map['languageid']=DB_LANGUAGE;
 		$map['keyid']=$id;
 		$query=$db->where($map)->find();
 		return $query['text'];
@@ -196,7 +196,7 @@ class ItemModel extends Model {
 		}
 		return $Mineral1;
 	}
-	public function selectDB($table){
+	protected function selectDB($table){
 		$db=C('DB_CONFIG_EVE');
 		$connection=$db['DB_TYPE'].'://'.$db['DB_USER'].':'.$db['DB_PWD'].'@'.$db['DB_HOST'].':'.$db['DB_PORT'].'/'.$db['DB_NAME'];
 		return $this->db(1,$connection)->table($table);
