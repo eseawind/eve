@@ -83,7 +83,6 @@ class MainAction extends Action
 				$array=$this->Itemsplit($_REQUEST['item']);
 				$query=D('Item');
 				$items=$query->getItems($array);
-				//print_r($items);
 				$this->assign('items',$items);
 			}
    		$this->display();
