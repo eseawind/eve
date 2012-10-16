@@ -8,5 +8,10 @@ class ProjectAction extends Action{
 	}
 	public function doAdd(){
 	}
+	public function getInfo(){
+		$item=$_REQUEST['item'];
+		$query=D('Item');
+		echo json_encode($query->getInfo($item));
+	}
 }
 ?>

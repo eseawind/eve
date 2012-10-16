@@ -74,7 +74,7 @@ class ItemModel extends Model {
   		$this->getDeeperMineral($Mineral);
   	return $Mineral;
 	}
-	protected function getInfo($name){
+	public function getInfo($name){
 		$db=$this->selectDB('trntranslations');
 		$map['tcid']=8;
 		$map['languageid']=DB_LANGUAGE;
