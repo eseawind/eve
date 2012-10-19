@@ -54,7 +54,9 @@ class ItemModel extends Model {
 		return $item1;
 	}
 	public function getMineral($id){
-		$Mineral=$this->getWastedMineral($id,-4)+$this->getExtraMineral($id);
+		$bp=$this->getBlueprint($id);
+		$blueprintid=$bp['blueprintTypeID'];
+		$Mineral=$this->getWastedMineral($id,$this->getLocalBP($blueprintid))+$this->getExtraMineral($id);
 		return $Mineral;
 	}
 	public function getDeeperMineral($Mineral){
@@ -138,7 +140,7 @@ class ItemModel extends Model {
 		//print_r($array);
 		return $Mineral;
 	}
-	protected function getZH($id){
+	public function getZH($id){
 		$db=$this->selectDB('trntranslations');
 		$map['tcid']=8;
 		$map['languageid']=DB_LANGUAGE;
@@ -171,7 +173,7 @@ class ItemModel extends Model {
 		}
 		return $array;
 	}
-	protected function getbaseFactor($blueprintid){
+	public function getbaseFactor($blueprintid){
 		$db=$this->selectDB('invblueprinttypes');
 		$map['blueprintTypeID']=$blueprintid;
 		$query=$db->where($map)->find();
@@ -200,6 +202,11 @@ class ItemModel extends Model {
 		$db=C('DB_CONFIG_EVE');
 		$connection=$db['DB_TYPE'].'://'.$db['DB_USER'].':'.$db['DB_PWD'].'@'.$db['DB_HOST'].':'.$db['DB_PORT'].'/'.$db['DB_NAME'];
 		return $this->db(1,$connection)->table($table);
+	}
+	public function getLocalBP($id){
+		$BPModel=D('LocalBP');
+		$BP=$BPModel->temp($id);
+		return $BP['ME'] ? $BP['ME'] : 0;
 	}
 }
 ?>
